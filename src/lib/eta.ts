@@ -7,11 +7,8 @@ export type EtaResult = {
 };
 
 export async function fetchEta(origin: LatLng, destination: LatLng): Promise<EtaResult | null> {
-  const proxy = import.meta.env.VITE_ETA_PROXY_URL as string;
-  if (!proxy) return null;
-
   const url =
-    `${proxy}?oLat=${origin.lat}&oLng=${origin.lng}` +
+    `/api/eta?oLat=${origin.lat}&oLng=${origin.lng}` +
     `&dLat=${destination.lat}&dLng=${destination.lng}`;
 
   const res = await fetch(url);
