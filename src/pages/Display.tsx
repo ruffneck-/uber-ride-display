@@ -6,8 +6,10 @@ import { fetchEta } from "../lib/eta";
 import TipScreen from "../screens/TipScreen";
 import FunFactScreen from "../screens/FunFactScreen";
 import StatusScreen from "../screens/StatusScreen";
+import MapScreen from "../screens/MapScreen";
 
-type ScreenKey = "status" | "fact" | "tips";
+
+type ScreenKey = "status" | "map" | "fact" | "tips";
 
 export default function Display() {
   const [codeInput, setCodeInput] = useState("");
@@ -29,7 +31,7 @@ export default function Display() {
 
   // Rotate screens
   useEffect(() => {
-    const order: ScreenKey[] = ["status", "fact", "tips"];
+    const order: ScreenKey[] = ["status", "map", "fact", "tips"];
     const ms = 12000; // 12s each
     const t = setInterval(() => {
       setScreen((prev) => {
@@ -102,6 +104,7 @@ export default function Display() {
         {screen === "status" && <StatusScreen session={session} eta={eta} />}
         {screen === "fact" && <FunFactScreen />}
         {screen === "tips" && <TipScreen />}
+        {screen === "map" && <MapScreen session={session} />}
       </div>
     </div>
   );
