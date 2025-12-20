@@ -15,7 +15,12 @@ export default function MapScreen({ session }: { session: SessionDoc | null }) {
 
   return (
     <div style={{ height: "100%" }}>
-      <LiveMap current={{ lat: last.lat, lng: last.lng }} destination={dest} follow />
+      <LiveMap
+        current={{ lat: last.lat, lng: last.lng }}
+        destination={dest}
+        heading={last.heading}
+        follow
+      />
     </div>
   );
 }
