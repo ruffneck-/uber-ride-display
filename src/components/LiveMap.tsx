@@ -2,7 +2,28 @@ import Map, { Marker } from "react-map-gl";
 import maplibregl from "maplibre-gl";
 import type { LatLng } from "../types";
 
-const STYLE = "https://demotiles.maplibre.org/style.json";
+const OSM_RASTER_STYLE: any = {
+  version: 8,
+  sources: {
+    osm: {
+      type: "raster",
+      tiles: [
+        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      attribution: "© OpenStreetMap contributors",
+    },
+  },
+  layers: [
+    {
+      id: "osm",
+      type: "raster",
+      source: "osm",
+    },
+  ],
+};
 
 function clampHeading(deg?: number): number {
   if (typeof deg !== "number" || Number.isNaN(deg)) return 0;
@@ -62,7 +83,7 @@ export default function LiveMap({
     >
       <Map
         mapLib={maplibregl as any}
-        mapStyle={STYLE}
+        mapStyle={OSM_RASTER_STYLE}
         // initial camera
         initialViewState={{
           longitude,
