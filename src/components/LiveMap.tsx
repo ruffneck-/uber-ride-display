@@ -1,6 +1,7 @@
-import Map, { Marker } from "react-map-gl";
+import Map, { Marker, type MapRef } from "react-map-gl";
 import maplibregl from "maplibre-gl";
 import type { LatLng } from "../types";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const OSM_RASTER_STYLE: any = {
   version: 8,
@@ -16,13 +17,7 @@ const OSM_RASTER_STYLE: any = {
       attribution: "© OpenStreetMap contributors",
     },
   },
-  layers: [
-    {
-      id: "osm",
-      type: "raster",
-      source: "osm",
-    },
-  ],
+  layers: [{ id: "osm", type: "raster", source: "osm" }],
 };
 
 function clampHeading(deg?: number): number {
@@ -31,16 +26,10 @@ function clampHeading(deg?: number): number {
   return v < 0 ? v + 360 : v;
 }
 
-/**
- * A simple triangular "car" arrow that we rotate by GPS heading.
- * Heading convention: 0° = North, 90° = East.
- */
 function CarArrow({ heading }: { heading?: number }) {
   const rot = clampHeading(heading);
-
   return (
     <div
-      aria-label="car-heading"
       style={{
         width: 0,
         height: 0,
@@ -56,6 +45,26 @@ function CarArrow({ heading }: { heading?: number }) {
   );
 }
 
+function useSmoothedBearing(targetBearing: number, enabled: boolean) {
+  const [bearing, setBearing] = useState(targetBearing);
+  useEffect(() => {
+    if (!enabled) {
+      setBearing(targetBearing);
+      return;
+    }
+    // Smooth bearing transitions: avoid 359 -> 0 jump the long way
+    setBearing((prev) => {
+      const a = ((prev % 360) + 360) % 360;
+      const b = ((targetBearing % 360) + 360) % 360;
+      let delta = b - a;
+      if (delta > 180) delta -= 360;
+      if (delta < -180) delta += 360;
+      return a + delta;
+    });
+  }, [targetBearing, enabled]);
+  return bearing;
+}
+
 export default function LiveMap({
   current,
   destination,
@@ -67,59 +76,62 @@ export default function LiveMap({
   heading?: number;
   follow?: boolean;
 }) {
-  // react-map-gl expects longitude/latitude numbers
-  const longitude = current.lng;
-  const latitude = current.lat;
+  const mapRef = useRef<MapRef | null>(null);
+
+  // Keep a stable zoom and pitch; we’ll animate center/bearing.
+  const zoom = 14;
+  const pitch = 45;
+
+  const targetBearing = useMemo(() => clampHeading(heading), [heading]);
+  const smoothedBearing = useSmoothedBearing(targetBearing, follow);
+
+  // When GPS updates and follow=true, smoothly move camera.
+  useEffect(() => {
+    if (!follow) return;
+    const m = mapRef.current;
+    if (!m) return;
+
+    // easeTo gives that “nav camera” feel
+    m.easeTo({
+      center: [current.lng, current.lat],
+      bearing: smoothedBearing,
+      pitch,
+      zoom,
+      duration: 650,
+      essential: true,
+    });
+  }, [current.lat, current.lng, follow, smoothedBearing]);
 
   return (
-    <div
-      style={{
-        height: "100%",
-        width: "100%",
-        borderRadius: 16,
-        overflow: "hidden",
-        border: "1px solid #eee",
-      }}
-    >
+    <div style={{ height: "100%", width: "100%", borderRadius: 16, overflow: "hidden", border: "1px solid #eee" }}>
       <Map
+        ref={mapRef}
         mapLib={maplibregl as any}
         mapStyle={OSM_RASTER_STYLE}
-        // initial camera
         initialViewState={{
-          longitude,
-          latitude,
-          zoom: 13.8,
+          longitude: current.lng,
+          latitude: current.lat,
+          zoom,
+          pitch,
+          bearing: smoothedBearing,
         }}
-        // "follow" mode: keep camera centered on current location
-        // (we disable drag pan so passengers can't accidentally move it)
-        longitude={follow ? longitude : undefined}
-        latitude={follow ? latitude : undefined}
-        zoom={13.8}
         style={{ width: "100%", height: "100%" }}
+        // When follow is on, prevent passengers from messing with it
         dragPan={!follow}
-        scrollZoom={false}
-        doubleClickZoom={false}
-        touchZoomRotate
-        // keep it simple/stable for Vercel builds
+        scrollZoom={!follow}
+        doubleClickZoom={!follow}
+        touchZoomRotate={!follow}
         attributionControl={false}
       >
-        {/* Current position marker */}
-        <Marker longitude={longitude} latitude={latitude} anchor="center">
+        {/* Car */}
+        <Marker longitude={current.lng} latitude={current.lat} anchor="center">
           <CarArrow heading={heading} />
         </Marker>
 
-        {/* Destination marker */}
+        {/* Destination */}
         {destination && (
           <Marker longitude={destination.lng} latitude={destination.lat} anchor="bottom">
-            <div
-              style={{
-                fontSize: 26,
-                filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.25))",
-                userSelect: "none",
-              }}
-              aria-label="destination"
-              title="Destination"
-            >
+            <div style={{ fontSize: 26, filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.25))", userSelect: "none" }}>
               📍
             </div>
           </Marker>
