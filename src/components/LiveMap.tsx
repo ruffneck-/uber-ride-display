@@ -1,4 +1,4 @@
-import Map, { Marker, type MapRef } from "react-map-gl";
+import Map, { Marker, Source, Layer, type MapRef } from "react-map-gl";
 import maplibregl from "maplibre-gl";
 import type { LatLng } from "../types";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -70,12 +70,15 @@ export default function LiveMap({
   destination,
   heading,
   follow = true,
+  routeGeojson,
 }: {
   current: LatLng;
   destination?: LatLng;
   heading?: number;
   follow?: boolean;
+  routeGeojson?: any;
 }) {
+
   const mapRef = useRef<MapRef | null>(null);
 
   // Keep a stable zoom and pitch; we’ll animate center/bearing.
@@ -123,6 +126,37 @@ export default function LiveMap({
         touchZoomRotate={!follow}
         attributionControl={false}
       >
+        {routeGeojson && (
+  <Source id="route" type="geojson" data={routeGeojson}>
+    <Layer
+      id="route-line"
+      type="line"
+      paint={{
+        "line-color": "#00E5FF",
+        "line-width": 6,
+        "line-opacity": 0.85,
+      }}
+      layout={{
+        "line-join": "round",
+        "line-cap": "round",
+      }}
+    />
+    <Layer
+      id="route-line-glow"
+      type="line"
+      paint={{
+        "line-color": "#00E5FF",
+        "line-width": 14,
+        "line-opacity": 0.22,
+      }}
+      layout={{
+        "line-join": "round",
+        "line-cap": "round",
+      }}
+    />
+  </Source>
+)}
+
         {/* Car */}
         <Marker longitude={current.lng} latitude={current.lat} anchor="center">
           <CarArrow heading={heading} />
