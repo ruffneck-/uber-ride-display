@@ -2,8 +2,8 @@ import { QRCodeSVG } from "qrcode.react";
 
 
 const TIP = {
-  venmoUrl: "https://venmo.com/u/YOURNAME",     // replace
-  cashAppUrl: "https://cash.app/$YOURCASHTAG",  // replace
+  venmoUrl: "https://venmo.com/code?user_id=2400963281289216961&created=1765830323E",     // replace
+  cashAppUrl: "https://cash.app/$MarkWanner303",  // replace
 };
 
 function QR({ label, url }: { label: string; url: string }) {
