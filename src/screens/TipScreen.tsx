@@ -23,8 +23,8 @@ export default function TipScreen() {
     <div style={{ height: "100%", border: "1px solid #eee", borderRadius: 16, padding: 18, boxSizing: "border-box" }}>
       <div style={{ textAlign: "center", marginBottom: 14 }}>
         <div style={{ fontSize: 38, fontWeight: 900 }}>🙏 Thanks for riding!</div>
-        <div style={{ fontSize: 18, opacity: 0.8, marginTop: 6 }}>
-          Tips are appreciated, they help keep this car clean and fueled — never required.
+        <div style={{ fontSize: 23 , opacity: 0.8, marginTop: 6 }}>
+          Tips are appreciated, they help keep this car clean and fueled — never required. If you need anything just let me know! You can also just tip in the Uber app.
         </div>
       </div>
 
@@ -33,7 +33,7 @@ export default function TipScreen() {
         <QR label="Cash App" url={TIP.cashAppUrl} />
       </div>
 
-      <div style={{ marginTop: 14, textAlign: "center", fontSize: 14, opacity: 0.7 }}>
+      <div style={{ marginTop: 14, textAlign: "center", fontSize: 38, opacity: 0.7 }}>
         ⭐⭐ If you enjoyed the ride, a 5-star rating helps a ton. ⭐⭐
       </div>
     </div>
